@@ -65,6 +65,12 @@
                                 </relocation>
                             </relocations>
                             <artifactSet>
+                                <includes>
+                                    <include>net.wesjd:anvilgui</include>
+                                    <include>com.tchristofferson:ConfigUpdater</include>
+                                    <include>com.github.aematsubara:MineskinClient</include>
+                                    <include>com.github.cryptomorin:XSeries</include>
+                                </includes>
                                 <excludes>
                                     <exclude>com.molean:FoliaAdapter</exclude>
                                 </excludes>

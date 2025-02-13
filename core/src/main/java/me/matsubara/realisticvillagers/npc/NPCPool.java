@@ -34,8 +34,9 @@ public class NPCPool implements Listener {
     }
 
     protected void tick() {
+        Folia.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                Folia.getScheduler().runTaskTimer(plugin, () -> {
+                Folia.getScheduler().runTask(plugin, player, () -> {
                     for (NPC npc : npcMap.values()) {
                         LivingEntity bukkit = npc.getNpc().bukkit();
                         if (bukkit == null) continue;
@@ -62,9 +63,9 @@ public class NPCPool implements Listener {
                             npc.show(player);
                         }
                     }
-                }, player, 30L, 30L);
+                });
             }
-
+        }, 30L, 30L);
     }
 
     protected void takeCareOf(NPC npc) {
