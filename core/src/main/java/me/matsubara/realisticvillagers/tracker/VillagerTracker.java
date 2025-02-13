@@ -5,6 +5,8 @@ import com.github.retrooper.packetevents.protocol.player.TextureProperty;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import com.molean.folia.adapter.Folia;
 import com.molean.folia.adapter.FoliaRunnable;
+import com.molean.folia.adapter.scoreborad.FoliaScoreboard;
+import com.molean.folia.adapter.scoreborad.FoliaScoreboardManager;
 import lombok.Getter;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.entity.IVillagerNPC;
@@ -81,6 +83,7 @@ public final class VillagerTracker implements Listener {
     private final VillagerHandler handler;
     private final MineskinClient mineskinClient;
     private final Random random = new Random();
+    private final FoliaScoreboardManager scoreboardManager;
 
     private static final String NAMETAG_TEAM_NAME = "RVNametag";
     public static final String HIDE_NAMETAG_NAME = "abcdefghijklmnño";
@@ -89,6 +92,7 @@ public final class VillagerTracker implements Listener {
 
     public VillagerTracker(RealisticVillagers plugin) {
         this.plugin = plugin;
+        this.scoreboardManager = new FoliaScoreboardManager(plugin);
         this.pool = new NPCPool(plugin);
         this.spawnListeners = new BukkitSpawnListeners(plugin);
 
@@ -389,10 +393,7 @@ public final class VillagerTracker implements Listener {
     }
 
     public void checkNametagTeam() {
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
-        if (manager == null) return;
-
-        Scoreboard scoreboard = manager.getMainScoreboard();
+        Scoreboard scoreboard = scoreboardManager.getScoreboard();
 
         Team team = getNametagTeam(scoreboard);
         team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
