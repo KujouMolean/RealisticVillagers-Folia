@@ -60,6 +60,7 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 import java.util.logging.Logger;
 
@@ -858,19 +859,23 @@ public final class RealisticVillagers extends JavaPlugin {
         return GiftCategory.appliesToVillager(wantedItems, npc, item, isItemPickup);
     }
 
-    public @Nullable LivingEntity getUnloadedOffline(@NotNull IVillagerNPC offline) {
+    public @NotNull CompletableFuture<@Nullable LivingEntity> getUnloadedOffline(@NotNull IVillagerNPC offline) {
         LivingEntity bukkit = offline.bukkit();
-        if (bukkit != null) return bukkit;
+        if (bukkit != null) return CompletableFuture.completedFuture(bukkit);
 
         Location location = offline.getLastKnownPosition().asLocation();
-        if (location.getWorld() == null) return null;
+        if (location.getWorld() == null) return CompletableFuture.completedFuture(null);
 
-        Chunk chunk = location.getWorld().getChunkAt(location);
-        chunk.load();
-        chunk.getEntities();
+        CompletableFuture<LivingEntity> future = new CompletableFuture<>();
+        Folia.getScheduler().runTask(this,location, () -> {
+            Chunk chunk = location.getWorld().getChunkAt(location);
+            chunk.load();
+            chunk.getEntities();
 
-        Entity inChunk = Bukkit.getEntity(offline.getUniqueId());
-        return inChunk instanceof Villager villager ? villager : null;
+            Entity inChunk = Bukkit.getEntity(offline.getUniqueId());
+            future.complete(inChunk instanceof Villager villager ? villager : null);
+        });
+        return future;
     }
 
     public void openWhistleGUI(Player player, @Nullable Integer page, @Nullable String keyword) {

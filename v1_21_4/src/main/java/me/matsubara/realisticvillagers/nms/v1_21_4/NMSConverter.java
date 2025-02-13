@@ -219,14 +219,14 @@ public class NMSConverter implements INMSConverter {
         // Shouldn't be null unless the mother is dead.
         IVillagerNPC mother = plugin.getTracker().getOffline(motherUUID);
         if (mother != null) {
-            org.bukkit.entity.LivingEntity bukkitMother = plugin.getUnloadedOffline(mother);
-
-            VillagerNPC nmsMother = bukkitMother != null ? ((VillagerNPC) ((CraftVillager) bukkitMother).getHandle()) : null;
-            if (nmsMother != null) {
-                nmsMother.setAge(6000);
-                nmsMother.getChildrens().add(baby.getOffline());
-                baby.setMother(nmsMother.getOffline());
-            }
+            plugin.getUnloadedOffline(mother).thenAccept(bukkitMother -> {
+                VillagerNPC nmsMother = bukkitMother != null ? ((VillagerNPC) ((CraftVillager) bukkitMother).getHandle()) : null;
+                if (nmsMother != null) {
+                    nmsMother.setAge(6000);
+                    nmsMother.getChildrens().add(baby.getOffline());
+                    baby.setMother(nmsMother.getOffline());
+                }
+            });
         }
 
         UUID fatherUUID = father.getUniqueId();

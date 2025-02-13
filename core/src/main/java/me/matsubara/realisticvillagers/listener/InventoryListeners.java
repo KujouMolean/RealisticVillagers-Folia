@@ -226,18 +226,25 @@ public final class InventoryListeners implements Listener {
                 if (!offline.getUniqueId().equals(villagerUUID)) continue;
 
                 Villager bukkit = offline.bukkit() instanceof Villager villager ? villager : null;
-                boolean teleported = true;
-                if (bukkit != null) PluginUtils.teleportWithPassengers(bukkit, playerLocation);
-                else {
-                    Villager villager = plugin.getUnloadedOffline(offline) instanceof Villager temp ? temp : null;
-                    if (villager != null) PluginUtils.teleportWithPassengers(villager, playerLocation);
-                    else teleported = false;
-                }
+                AtomicBoolean teleported = new AtomicBoolean(true);
+                if (bukkit != null){
+                    PluginUtils.teleportWithPassengers(bukkit, playerLocation);
+                    plugin.getMessages().send(
+                            player,
+                            teleported.get() ? Messages.Message.WHISTLE_TELEPORTED : Messages.Message.WHISTLE_ERROR,
+                            message -> message.replace("%villager-name%", offline.getVillagerName()));
+                } else {
+                    plugin.getUnloadedOffline(offline).thenAccept(livingEntity -> {
+                        Villager villager = livingEntity instanceof Villager temp ? temp : null;
+                        if (villager != null) PluginUtils.teleportWithPassengers(villager, playerLocation);
+                        else teleported.set(false);
 
-                plugin.getMessages().send(
-                        player,
-                        teleported ? Messages.Message.WHISTLE_TELEPORTED : Messages.Message.WHISTLE_ERROR,
-                        message -> message.replace("%villager-name%", offline.getVillagerName()));
+                        plugin.getMessages().send(
+                                player,
+                                teleported.get() ? Messages.Message.WHISTLE_TELEPORTED : Messages.Message.WHISTLE_ERROR,
+                                message -> message.replace("%villager-name%", offline.getVillagerName()));
+                    });
+                }
                 break;
             }
 

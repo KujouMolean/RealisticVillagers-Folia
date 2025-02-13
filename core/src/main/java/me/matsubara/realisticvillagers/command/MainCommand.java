@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -312,60 +313,66 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     private void handleForceDivorce(CommandSender sender, @NotNull String[] args) {
-        Messages messages = plugin.getMessages();
-        VillagerTracker tracker = plugin.getTracker();
-        INMSConverter converter = plugin.getConverter();
+        Folia.getScheduler().runTaskAsynchronously(plugin, () -> {
+            Messages messages = plugin.getMessages();
+            VillagerTracker tracker = plugin.getTracker();
+            INMSConverter converter = plugin.getConverter();
 
-        @SuppressWarnings("deprecation") OfflinePlayer offline = args.length > 1 ? Bukkit.getOfflinePlayer(args[1]) : sender instanceof Player ? (Player) sender : null;
-        if (offline == null || !offline.hasPlayedBefore()) {
-            messages.sendMessages(sender, Messages.Message.UNKNOWN_PLAYER);
-            return;
-        }
-
-        UUID partnerUUID = null;
-
-        Player player = offline.getPlayer();
-        if (player == null) {
-            File playerFile = tracker.getPlayerNBTFile(offline.getUniqueId());
-            if (playerFile != null && (partnerUUID = converter.getPartnerUUIDFromPlayerNBT(playerFile)) != null) {
-                converter.removePartnerFromPlayerNBT(playerFile);
+            @SuppressWarnings("deprecation") OfflinePlayer offline = args.length > 1 ? Bukkit.getOfflinePlayer(args[1]) : sender instanceof Player ? (Player) sender : null;
+            if (offline == null || !offline.hasPlayedBefore()) {
+                messages.sendMessages(sender, Messages.Message.UNKNOWN_PLAYER);
+                return;
             }
-        } else {
-            String uuidString = player.getPersistentDataContainer().get(plugin.getMarriedWith(), PersistentDataType.STRING);
-            if (uuidString != null) partnerUUID = UUID.fromString(uuidString);
-            player.getPersistentDataContainer().remove(plugin.getMarriedWith());
-        }
 
-        if (partnerUUID == null) {
+            UUID partnerUUID = null;
+
+            Player player = offline.getPlayer();
+            if (player == null) {
+                File playerFile = tracker.getPlayerNBTFile(offline.getUniqueId());
+                if (playerFile != null && (partnerUUID = converter.getPartnerUUIDFromPlayerNBT(playerFile)) != null) {
+                    converter.removePartnerFromPlayerNBT(playerFile);
+                }
+            } else {
+                String uuidString = player.getPersistentDataContainer().get(plugin.getMarriedWith(), PersistentDataType.STRING);
+                if (uuidString != null) partnerUUID = UUID.fromString(uuidString);
+                player.getPersistentDataContainer().remove(plugin.getMarriedWith());
+            }
+
+            if (partnerUUID == null) {
+                messages.send(
+                        sender,
+                        Messages.Message.NOT_MARRIED,
+                        string -> string.replace("%player-name%", Objects.requireNonNullElse(offline.getName(), "???")));
+                return;
+            }
+
+            for (IVillagerNPC offlineVillager : tracker.getOfflineVillagers()) {
+                if (!offlineVillager.getUniqueId().equals(partnerUUID)) continue;
+
+                LivingEntity bukkit = offlineVillager.bukkit();
+                if (bukkit == null) {
+                    try {
+                        bukkit = plugin.getUnloadedOffline(offlineVillager).join();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (bukkit == null) continue;
+                }
+
+                // In this case, we don't need to ignore invalid villagers.
+                IVillagerNPC npc = converter.getNPC(bukkit).orElse(null);
+                if (npc == null) continue;
+
+                npc.divorceAndDropRing(player);
+                break;
+            }
+
+            // At this point, either the player or the villager (or both) should be divorced.
             messages.send(
                     sender,
-                    Messages.Message.NOT_MARRIED,
+                    Messages.Message.DIVORCED,
                     string -> string.replace("%player-name%", Objects.requireNonNullElse(offline.getName(), "???")));
-            return;
-        }
-
-        for (IVillagerNPC offlineVillager : tracker.getOfflineVillagers()) {
-            if (!offlineVillager.getUniqueId().equals(partnerUUID)) continue;
-
-            LivingEntity bukkit = offlineVillager.bukkit();
-            if (bukkit == null) {
-                bukkit = plugin.getUnloadedOffline(offlineVillager);
-                if (bukkit == null) continue;
-            }
-
-            // In this case, we don't need to ignore invalid villagers.
-            IVillagerNPC npc = converter.getNPC(bukkit).orElse(null);
-            if (npc == null) continue;
-
-            npc.divorceAndDropRing(player);
-            break;
-        }
-
-        // At this point, either the player or the villager (or both) should be divorced.
-        messages.send(
-                sender,
-                Messages.Message.DIVORCED,
-                string -> string.replace("%player-name%", Objects.requireNonNullElse(offline.getName(), "???")));
+        });
     }
 
     private boolean getItemCommand(CommandSender sender, String[] args, String itemGetter, @NotNull Shape shape) {
