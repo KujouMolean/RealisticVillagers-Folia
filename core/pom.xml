@@ -64,6 +64,11 @@
                                     <shadedPattern>me.matsubara.realisticvillagers.util</shadedPattern>
                                 </relocation>
                             </relocations>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>com.molean:FoliaAdapter</exclude>
+                                </excludes>
+                            </artifactSet>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -149,6 +154,10 @@
             <id>viaversion-repo</id>
             <url>https://repo.viaversion.com</url>
         </repository>
+        <repository>
+            <id>paper-repo</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -159,6 +168,11 @@
             <artifactId>spigot-api</artifactId>
             <version>1.20.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.21.4-R0.1-SNAPSHOT</version>
         </dependency>
         <!-- AnvilGUI -->
         <dependency>

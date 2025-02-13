@@ -1,5 +1,6 @@
 package me.matsubara.realisticvillagers.listener.spawn;
 
+import com.molean.folia.adapter.Folia;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.files.Config;
 import me.matsubara.realisticvillagers.nms.INMSConverter;
@@ -100,7 +101,7 @@ public class BukkitSpawnListeners implements Listener {
         }
 
         // Spawn NPC & cache data in the next tick to prevent disguising invalid entities after checking their new metadata.
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        Folia.getScheduler().runTask(plugin, villager.getLocation(), () -> {
             tracker.spawnNPC(villager);
             tracker.updateData(villager);
         });

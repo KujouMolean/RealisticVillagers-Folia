@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
+import com.molean.folia.adapter.FoliaRunnable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -113,15 +114,15 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_21_R1.CraftRegionAccessor;
-import org.bukkit.craftbukkit.v1_21_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_21_R1.enchantments.CraftEnchantment;
-import org.bukkit.craftbukkit.v1_21_R1.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_21_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_21_R1.entity.CraftVillager;
-import org.bukkit.craftbukkit.v1_21_R1.event.CraftEventFactory;
-import org.bukkit.craftbukkit.v1_21_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_21_R1.persistence.CraftPersistentDataContainer;
+import org.bukkit.craftbukkit.CraftRegionAccessor;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftVillager;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.FishHook;
@@ -131,7 +132,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -1163,7 +1163,7 @@ public class VillagerNPC extends Villager implements IVillagerNPC, CrossbowAttac
         shakingHeadAt = ((CraftPlayer) at).getHandle();
         getLookControl().setLookAt(shakingHeadAt);
 
-        new BukkitRunnable() {
+        new FoliaRunnable() {
             int current;
             int turns;
 
@@ -1194,7 +1194,7 @@ public class VillagerNPC extends Villager implements IVillagerNPC, CrossbowAttac
                 yHeadRot += ROTATION[current] * 3;
                 current++;
             }
-        }.runTaskTimer(plugin, 4L, 1L);
+        }.runTaskTimer(plugin, getBukkitEntity(), 4L, 1L);
 
         shakingHead = true;
     }
@@ -1236,7 +1236,7 @@ public class VillagerNPC extends Villager implements IVillagerNPC, CrossbowAttac
     }
 
     @Override
-    protected SoundEvent getDeathSound() {
+    public SoundEvent getDeathSound() {
         return useVillagerSounds() ? super.getDeathSound() : SoundEvents.PLAYER_DEATH;
     }
 

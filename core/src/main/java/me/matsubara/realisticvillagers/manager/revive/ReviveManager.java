@@ -1,6 +1,7 @@
 package me.matsubara.realisticvillagers.manager.revive;
 
 import com.google.common.collect.Sets;
+import com.molean.folia.adapter.Folia;
 import lombok.Getter;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.entity.IVillagerNPC;
@@ -191,7 +192,7 @@ public class ReviveManager implements Listener {
         if (block.getType() != Material.EMERALD_BLOCK
                 || (Config.REVIVE_ONLY_AT_NIGHT.asBool()) && isDay(block.getWorld())) return;
 
-        plugin.getServer().getScheduler().runTask(plugin, () -> checkForMonument(event.getPlayer(), block));
+        Folia.getScheduler().runTask(plugin, event.getBlock().getLocation(), () -> checkForMonument(event.getPlayer(), block));
     }
 
     private void checkForMonument(Player player, @NotNull Block block) {

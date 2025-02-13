@@ -1,6 +1,7 @@
 package me.matsubara.realisticvillagers.manager.revive;
 
 import com.google.common.collect.ImmutableList;
+import com.molean.folia.adapter.FoliaRunnable;
 import lombok.Getter;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.files.Config;
@@ -19,7 +20,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +28,7 @@ import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
-public class MonumentAnimation extends BukkitRunnable {
+public class MonumentAnimation extends FoliaRunnable {
 
     private final RealisticVillagers plugin;
     private final String tag;
@@ -69,7 +69,7 @@ public class MonumentAnimation extends BukkitRunnable {
 
         // Refresh display and initialize runnable.
         refreshDisplay(block);
-        runTaskTimer(plugin, 0L, 1L);
+        runTaskTimer(plugin, block.getLocation(), 0L, 1L);
     }
 
     private @Nullable BossBar initializeBossBar() {

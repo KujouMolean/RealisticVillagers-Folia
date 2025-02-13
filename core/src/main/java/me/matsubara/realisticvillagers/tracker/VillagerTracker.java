@@ -3,6 +3,8 @@ package me.matsubara.realisticvillagers.tracker;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.player.TextureProperty;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
+import com.molean.folia.adapter.Folia;
+import com.molean.folia.adapter.FoliaRunnable;
 import lombok.Getter;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.entity.IVillagerNPC;
@@ -36,7 +38,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
@@ -235,7 +236,7 @@ public final class VillagerTracker implements Listener {
     public void onEntityDeath(@NotNull EntityDeathEvent event) {
         if (!(event.getEntity() instanceof AbstractVillager villager)) return;
         markAsDeath(villager);
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> removeNPC(event.getEntity().getEntityId()), 40L);
+        Folia.getScheduler().runTaskLater(plugin, event.getEntity(), () -> removeNPC(event.getEntity().getEntityId()), 40L);
     }
 
     @EventHandler
@@ -304,7 +305,7 @@ public final class VillagerTracker implements Listener {
 
         EntityPotionEffectEvent.Action action = event.getAction();
 
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        Folia.getScheduler().runTask(plugin, event.getEntity(), () -> {
             for (Player player : temp.getSeeingPlayers()) {
                 if (action == EntityPotionEffectEvent.Action.CLEARED || action == EntityPotionEffectEvent.Action.REMOVED) {
                     temp.spawnNametags(player, true);
@@ -681,7 +682,7 @@ public final class VillagerTracker implements Listener {
         if (!happyParticles) return;
 
         // Spawn happy particles every 0.5 seconds.
-        new BukkitRunnable() {
+        new FoliaRunnable() {
             @Override
             public void run() {
                 if (creator.isDone()) {
@@ -690,7 +691,7 @@ public final class VillagerTracker implements Listener {
                 }
                 if (random.nextInt(35) == 0) living.playEffect(EntityEffect.VILLAGER_HAPPY);
             }
-        }.runTaskTimer(plugin, 1L, 1L);
+        }.runTaskTimer(plugin, living, 1L, 1L);
     }
 
     private @Nullable CompletableFuture<Skin> getCreator(LivingEntity living, @NotNull TextureProperty textures) {

@@ -22,6 +22,7 @@
 
 package me.matsubara.realisticvillagers.util.customblockdata;
 
+import com.molean.folia.adapter.Folia;
 import me.matsubara.realisticvillagers.util.customblockdata.events.CustomBlockDataRemoveEvent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -146,7 +147,7 @@ public class CustomBlockData implements PersistentDataContainer {
 
     static void setDirty(Plugin plugin, Map.Entry<UUID, BlockVector> blockEntry) {
         DIRTY_BLOCKS.add(blockEntry);
-        Bukkit.getScheduler().runTask(plugin, () -> DIRTY_BLOCKS.remove(blockEntry));
+        Folia.getScheduler().runTask(plugin, blockEntry.getValue().toLocation(Objects.requireNonNull(Bukkit.getWorld(blockEntry.getKey()))), () -> DIRTY_BLOCKS.remove(blockEntry));
     }
 
     /**

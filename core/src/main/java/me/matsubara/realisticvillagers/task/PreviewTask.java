@@ -2,6 +2,7 @@ package me.matsubara.realisticvillagers.task;
 
 import com.github.retrooper.packetevents.protocol.player.TextureProperty;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
+import com.molean.folia.adapter.FoliaRunnable;
 import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.files.Config;
@@ -19,7 +20,6 @@ import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +28,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.UUID;
 
-public class PreviewTask extends BukkitRunnable {
+public class PreviewTask extends FoliaRunnable {
 
     private final RealisticVillagers plugin;
     private final Player player;

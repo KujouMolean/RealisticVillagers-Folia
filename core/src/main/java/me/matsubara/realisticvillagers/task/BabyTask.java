@@ -1,5 +1,7 @@
 package me.matsubara.realisticvillagers.task;
 
+import com.molean.folia.adapter.Folia;
+import com.molean.folia.adapter.FoliaRunnable;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.entity.IVillagerNPC;
 import me.matsubara.realisticvillagers.files.Config;
@@ -10,12 +12,11 @@ import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 
-public class BabyTask extends BukkitRunnable {
+public class BabyTask extends FoliaRunnable {
 
     private final RealisticVillagers plugin;
     private final IVillagerNPC villager;
@@ -71,7 +72,7 @@ public class BabyTask extends BukkitRunnable {
                 })
                 .onClose(opener -> {
                     if (success) return;
-                    plugin.getServer().getScheduler().runTask(plugin, () -> openInventory(Config.BABY_INVALID_NAME.asStringTranslated()));
+                    Folia.getScheduler().runTask(plugin, player, () -> openInventory(Config.BABY_INVALID_NAME.asStringTranslated()));
                 })
                 .plugin(plugin)
                 .open(player)

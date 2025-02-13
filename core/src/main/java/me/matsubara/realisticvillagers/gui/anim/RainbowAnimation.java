@@ -1,5 +1,6 @@
 package me.matsubara.realisticvillagers.gui.anim;
 
+import com.molean.folia.adapter.FoliaRunnable;
 import lombok.Getter;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.gui.InteractGUI;
@@ -10,7 +11,6 @@ import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.IntUnaryOperator;
 
-public class RainbowAnimation extends BukkitRunnable {
+public class RainbowAnimation extends FoliaRunnable {
 
     private final InteractGUI gui;
     private final boolean frameEnabled;

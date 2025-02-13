@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.molean.folia.adapter.FoliaUtils;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.files.Config;
 import net.md_5.bungee.api.ChatColor;
@@ -530,21 +531,24 @@ public final class PluginUtils {
     }
 
     public static void teleportWithPassengers(@NotNull LivingEntity living, Location targetLocation) {
-        if (living.teleport(targetLocation)) return;
-        if (GET_HANDLE == null || ABS_MOVE_TO == null) return;
+        FoliaUtils.teleportAsync(living, targetLocation).thenAccept(aBoolean -> {
+            if (!aBoolean) {
+                if (GET_HANDLE == null || ABS_MOVE_TO == null) return;
 
-        // We can't teleport entities with passengers with the API.
-        try {
-            Object nmsEntity = GET_HANDLE.invoke(CRAFT_ENTITY.cast(living));
-            ABS_MOVE_TO.invoke(
-                    nmsEntity,
-                    targetLocation.getX(),
-                    targetLocation.getY(),
-                    targetLocation.getZ(),
-                    targetLocation.getYaw(),
-                    targetLocation.getPitch());
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
+                // We can't teleport entities with passengers with the API.
+                try {
+                    Object nmsEntity = GET_HANDLE.invoke(CRAFT_ENTITY.cast(living));
+                    ABS_MOVE_TO.invoke(
+                            nmsEntity,
+                            targetLocation.getX(),
+                            targetLocation.getY(),
+                            targetLocation.getZ(),
+                            targetLocation.getYaw(),
+                            targetLocation.getPitch());
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        });
     }
 }

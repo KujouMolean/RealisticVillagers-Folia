@@ -1,6 +1,7 @@
 package me.matsubara.realisticvillagers.command;
 
 import com.github.retrooper.packetevents.protocol.player.TextureProperty;
+import com.molean.folia.adapter.Folia;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.entity.IVillagerNPC;
 import me.matsubara.realisticvillagers.files.Config;
@@ -209,21 +210,21 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (!(player.getOpenInventory().getTopInventory() instanceof InteractGUI interact)) continue;
             interact.setShouldStopInteracting(true);
-            plugin.getServer().getScheduler().runTask(plugin, player::closeInventory);
+            Folia.getScheduler().runTask(plugin, player, player::closeInventory);
         }
 
         ReviveManager reviveManager = plugin.getReviveManager();
 
         // Cancel all revivals.
         for (MonumentAnimation animation : reviveManager.getRunningTasks().values()) {
-            plugin.getServer().getScheduler().cancelTask(animation.getTaskId());
+            animation.cancel();
         }
 
         SkinGUI.CACHE_MALE_HEADS.clear();
         SkinGUI.CACHE_FEMALE_HEADS.clear();
 
         // Update config.yml & messages.yml async since we modify a lot of files.
-        CompletableFuture.runAsync(plugin::updateConfigs).thenRun(() -> plugin.getServer().getScheduler().runTask(plugin, () -> {
+        CompletableFuture.runAsync(plugin::updateConfigs).thenRun(() -> Folia.getScheduler().runTask(plugin, (Player)sender, () -> {
             // Reload gift categories and update mineskin api-key.
             plugin.getGiftManager().loadGiftCategories();
             tracker.updateMineskinApiKey();

@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.protocol.player.TextureProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import com.molean.folia.adapter.Folia;
 import com.tchristofferson.configupdater.ConfigUpdater;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lombok.Getter;
@@ -352,11 +353,13 @@ public final class RealisticVillagers extends JavaPlugin {
                     converter.refreshSchedules();
 
                     // Refresh brains sync to prevent issues.
-                    getServer().getScheduler().runTask(this, () -> {
+                    Folia.getScheduler().runTaskGlobally(this, () -> {
                         for (World world : getServer().getWorlds()) {
                             for (Villager villager : world.getEntitiesByClass(Villager.class)) {
-                                if (tracker.isInvalid(villager, true)) continue;
-                                converter.getNPC(villager).ifPresent(IVillagerNPC::refreshBrain);
+                                Folia.getScheduler().runTask(this, villager, () -> {
+                                    if (tracker.isInvalid(villager, true)) return;
+                                    converter.getNPC(villager).ifPresent(IVillagerNPC::refreshBrain);
+                                });
                             }
                         }
                     });

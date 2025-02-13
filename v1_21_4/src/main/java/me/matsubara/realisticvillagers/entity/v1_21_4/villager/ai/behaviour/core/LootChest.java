@@ -32,9 +32,9 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
-import org.bukkit.craftbukkit.v1_21_R3.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_21_R3.block.CraftChest;
-import org.bukkit.craftbukkit.v1_21_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftChest;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -303,7 +303,7 @@ public class LootChest extends Behavior<Villager> implements Exchangeable {
     }
 
     private boolean canStoreItems(@NotNull VillagerNPC npc) {
-        Inventory inventory = npc.getBukkitEntity().getInventory();
+        Inventory inventory = ((org.bukkit.entity.Villager) (npc.getBukkitLivingEntity())).getInventory();
         if (inventory.firstEmpty() != -1) return true;
 
         for (ItemStack item : inventory.getContents()) {

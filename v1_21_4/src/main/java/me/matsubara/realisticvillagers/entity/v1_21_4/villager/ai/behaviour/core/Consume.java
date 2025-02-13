@@ -33,7 +33,7 @@ import net.minecraft.world.item.consume_effects.ConsumeEffect;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.craftbukkit.v1_21_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;

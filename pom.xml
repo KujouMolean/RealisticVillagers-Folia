@@ -18,17 +18,17 @@
     <description>Forget about those boring villagers and replace them with interactive humans!</description>
 
     <modules>
-        <module>v1_18</module>
-        <module>v1_19</module>
-        <module>v1_20_1</module>
-        <module>v1_20_2</module>
-        <module>v1_20_4</module>
-        <module>v1_20_6</module>
         <module>v1_21</module>
         <module>v1_21_4</module>
         <module>core</module>
         <module>dist</module>
     </modules>
+    <repositories>
+        <repository>
+            <id>paper-repo</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <!-- Annotations -->
@@ -44,6 +44,17 @@
             <artifactId>lombok</artifactId>
             <version>1.18.30</version>
             <scope>provided</scope>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.papermc.paper</groupId>-->
+<!--            <artifactId>paper-api</artifactId>-->
+<!--            <version>1.21.4-R0.1-SNAPSHOT</version>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>com.molean</groupId>
+            <artifactId>FoliaAdapter</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <classifier>dev</classifier>
         </dependency>
     </dependencies>
 </project>

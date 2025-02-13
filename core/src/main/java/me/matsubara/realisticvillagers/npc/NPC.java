@@ -15,6 +15,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEn
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPassengers;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
 import com.google.common.base.Preconditions;
+import com.molean.folia.adapter.Folia;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
 import lombok.Getter;
@@ -285,14 +286,14 @@ public class NPC {
         VisibilityModifier modifier = visibility();
         modifier.queuePlayerListChange(false).send(player);
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        Folia.getScheduler().runTaskLater(plugin,player, () -> {
             modifier.queueSpawn(location).send(player);
             spawnCustomizer.handleSpawn(this, player);
             spawnNametags(player, true);
 
             // Keeping the NPC longer in the player list, otherwise the skin might not be shown sometimes.
-            Bukkit.getScheduler().runTaskLater(
-                    plugin,
+            Folia.getScheduler().runTaskLater(
+                    plugin,player,
                     () -> modifier.queuePlayerListChange(true).send(player),
                     40);
         }, 10L);

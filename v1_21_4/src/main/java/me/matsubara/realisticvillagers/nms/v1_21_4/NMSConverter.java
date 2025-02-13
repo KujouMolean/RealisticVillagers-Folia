@@ -47,6 +47,7 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.horse.Donkey;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.animal.horse.Mule;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.schedule.Activity;
@@ -63,12 +64,12 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_21_R3.CraftRaid;
-import org.bukkit.craftbukkit.v1_21_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_21_R3.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_21_R3.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_21_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_21_R3.entity.CraftVillager;
+import org.bukkit.craftbukkit.CraftRaid;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.entity.AbstractVillager;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ZombieVillager;
@@ -149,11 +150,11 @@ public class NMSConverter implements INMSConverter {
         Reflection.setFieldUsingUnsafe(
                 field,
                 EntityType.VILLAGER,
-                (EntityType.EntityFactory<net.minecraft.world.entity.npc.Villager>) (type, level) -> {
+                (EntityType.EntityFactory<Villager>) (type, level) -> {
                     if (level.getLevelData() instanceof PrimaryLevelData data && plugin.isEnabledIn(data.getLevelName())) {
                         return new VillagerNPC(EntityType.VILLAGER, level);
                     }
-                    return new net.minecraft.world.entity.npc.Villager(EntityType.VILLAGER, level);
+                    return new Villager(EntityType.VILLAGER, level);
                 });
         Reflection.setFieldUsingUnsafe(
                 field,
@@ -208,7 +209,7 @@ public class NMSConverter implements INMSConverter {
                 level,
                 VillagerType.byBiome(level.getBiome(((CraftBlock) location.getBlock()).getPosition())));
 
-        loadDataFromTag(baby.getBukkitEntity(), "");
+        loadDataFromTag(baby.getBukkitLivingEntity(), "");
         baby.setVillagerName(name);
         baby.setSex(sex);
 
@@ -377,7 +378,7 @@ public class NMSConverter implements INMSConverter {
         ServerLevel level = ((CraftWorld) location.getWorld()).getHandle();
         VillagerNPC villager = new VillagerNPC(EntityType.VILLAGER, level);
 
-        loadDataFromTag(villager.getBukkitEntity(), tag);
+        loadDataFromTag(villager.getBukkitLivingEntity(), tag);
 
         float health = (float) Math.min(villager.getMaxHealth(), Config.REVIVE_SPAWN_VALUES_HEALTH.asDouble());
         villager.setHealth(health);
@@ -394,7 +395,7 @@ public class NMSConverter implements INMSConverter {
                 // Default = 5 seconds, level 1 (amplifier 0).
                 int duration = data.length > 1 ? PluginUtils.getRangedAmount(data[1]) : 100;
                 int amplifier = data.length > 2 ? PluginUtils.getRangedAmount(data[2]) - 1 : 0;
-                villager.getBukkitEntity().addPotionEffect(new PotionEffect(type, duration, amplifier));
+                villager.getBukkitLivingEntity().addPotionEffect(new PotionEffect(type, duration, amplifier));
             }
         }
 

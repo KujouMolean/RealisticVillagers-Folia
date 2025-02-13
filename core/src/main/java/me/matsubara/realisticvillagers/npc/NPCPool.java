@@ -1,5 +1,6 @@
 package me.matsubara.realisticvillagers.npc;
 
+import com.molean.folia.adapter.Folia;
 import lombok.Getter;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.files.Config;
@@ -33,36 +34,37 @@ public class NPCPool implements Listener {
     }
 
     protected void tick() {
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                for (NPC npc : npcMap.values()) {
-                    LivingEntity bukkit = npc.getNpc().bukkit();
-                    if (bukkit == null) continue;
+                Folia.getScheduler().runTaskTimer(plugin, () -> {
+                    for (NPC npc : npcMap.values()) {
+                        LivingEntity bukkit = npc.getNpc().bukkit();
+                        if (bukkit == null) continue;
 
-                    Location npcLocation = bukkit.getLocation();
-                    Location playerLocation = player.getLocation();
+                        Location npcLocation = bukkit.getLocation();
+                        Location playerLocation = player.getLocation();
 
-                    World npcWorld = npcLocation.getWorld();
-                    if (npcWorld == null) continue;
+                        World npcWorld = npcLocation.getWorld();
+                        if (npcWorld == null) continue;
 
-                    if (!npcWorld.equals(playerLocation.getWorld())
-                            || !npcWorld.isChunkLoaded(npcLocation.getBlockX() >> 4, npcLocation.getBlockZ() >> 4)) {
-                        // Hide NPC if the NPC isn't in the same world of the player or the NPC isn't on a loaded chunk.
-                        if (npc.isShownFor(player)) npc.hide(player);
-                        continue;
+                        if (!npcWorld.equals(playerLocation.getWorld())
+                                || !npcWorld.isChunkLoaded(npcLocation.getBlockX() >> 4, npcLocation.getBlockZ() >> 4)) {
+                            // Hide NPC if the NPC isn't in the same world of the player or the NPC isn't on a loaded chunk.
+                            if (npc.isShownFor(player)) npc.hide(player);
+                            continue;
+                        }
+
+                        int renderDistance = Config.RENDER_DISTANCE.asInt();
+                        boolean inRange = npcLocation.distanceSquared(playerLocation) <= Math.min(renderDistance * renderDistance, BUKKIT_VIEW_DISTANCE);
+
+                        if (!inRange && npc.isShownFor(player)) {
+                            npc.hide(player);
+                        } else if (inRange && !npc.isShownFor(player)) {
+                            npc.show(player);
+                        }
                     }
-
-                    int renderDistance = Config.RENDER_DISTANCE.asInt();
-                    boolean inRange = npcLocation.distanceSquared(playerLocation) <= Math.min(renderDistance * renderDistance, BUKKIT_VIEW_DISTANCE);
-
-                    if (!inRange && npc.isShownFor(player)) {
-                        npc.hide(player);
-                    } else if (inRange && !npc.isShownFor(player)) {
-                        npc.show(player);
-                    }
-                }
+                }, player, 30L, 30L);
             }
-        }, 30L, 30L);
+
     }
 
     protected void takeCareOf(NPC npc) {

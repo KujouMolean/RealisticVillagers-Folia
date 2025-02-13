@@ -1,5 +1,6 @@
 package me.matsubara.realisticvillagers.gui;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import lombok.Getter;
 import lombok.Setter;
 import me.matsubara.realisticvillagers.RealisticVillagers;
@@ -24,7 +25,7 @@ public abstract class InteractGUI implements InventoryHolder {
     protected final IVillagerNPC npc;
     protected final Inventory inventory;
     protected final boolean useNPC;
-    protected @Setter int taskId;
+    protected @Setter ScheduledTask taskId;
     protected final UnaryOperator<String> titleOperator;
     protected RainbowAnimation animation;
     private @Setter boolean shouldStopInteracting;
@@ -60,7 +61,8 @@ public abstract class InteractGUI implements InventoryHolder {
         this.inventory = Bukkit.createInventory(this, (this.size = size), (titleOperator != null ? titleOperator : EMPTY).apply(title));
 
         this.shouldStopInteracting = true;
-        this.taskId = (animation = new RainbowAnimation(this)).runTaskTimer(plugin, 0L, 1L).getTaskId();
+        animation = new RainbowAnimation(this);
+        this.taskId = animation.runTaskTimerAsynchronously(plugin, 0L, 1L);
     }
 
     protected String getTitle() {

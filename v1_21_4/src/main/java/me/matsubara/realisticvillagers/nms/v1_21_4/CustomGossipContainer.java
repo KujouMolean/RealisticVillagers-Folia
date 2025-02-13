@@ -17,6 +17,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.ai.gossip.GossipContainer;
 import net.minecraft.world.entity.ai.gossip.GossipType;
+import net.minecraft.world.entity.npc.Villager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -35,6 +36,10 @@ public class CustomGossipContainer extends GossipContainer {
             GossipType.MINOR_POSITIVE, 30,
             GossipType.MAJOR_POSITIVE, 15,
             GossipType.TRADING, 5);
+
+    public CustomGossipContainer(Villager villager) {
+        super();
+    }
 
     @VisibleForDebug
     @Override

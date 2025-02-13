@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.molean.folia.adapter.Folia;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.data.ExpectingType;
 import me.matsubara.realisticvillagers.data.GUIInteractType;
@@ -27,6 +28,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
@@ -95,9 +97,9 @@ public final class InventoryListeners implements Listener {
         Inventory inventory = event.getInventory();
         if (!(inventory.getHolder() instanceof InteractGUI gui)) return;
 
-        if (gui.getTaskId() != -1) {
-            plugin.getServer().getScheduler().cancelTask(gui.getTaskId());
-            gui.setTaskId(-1);
+        if (gui.getTaskId() != null) {
+            gui.getTaskId().cancel();
+            gui.setTaskId(null);
         }
 
         IVillagerNPC npc = gui.getNPC();
@@ -256,7 +258,7 @@ public final class InventoryListeners implements Listener {
                 }
 
                 if (isCustomItem(current, "back")) {
-                    runTask(() -> new MainGUI(plugin, npc, player));
+                    runTask(() -> new MainGUI(plugin, npc, player), Pair.of(player, null));
                 }
             }
             return;
@@ -268,7 +270,7 @@ public final class InventoryListeners implements Listener {
 
         if (interact instanceof PlayersGUI players) {
             if (isCustomItem(current, "back")) {
-                runTask(() -> new CombatSettingsGUI(plugin, npc, player));
+                runTask(() -> new CombatSettingsGUI(plugin, npc, player), Pair.of(player, null));
                 return;
             } else if (isCustomItem(current, "previous")) {
                 players.previousPage(isShiftClick);
@@ -331,7 +333,7 @@ public final class InventoryListeners implements Listener {
 
         if (interact instanceof CombatGUI combat) {
             if (isCustomItem(current, "back")) {
-                runTask(() -> new CombatSettingsGUI(plugin, npc, player));
+                runTask(() -> new CombatSettingsGUI(plugin, npc, player), Pair.of(player, null));
             } else if (isCustomItem(current, "previous")) {
                 combat.previousPage(isShiftClick);
             } else if (isCustomItem(current, "next")) {
@@ -406,7 +408,7 @@ public final class InventoryListeners implements Listener {
                 settings.setShouldStopInteracting(false);
                 openCombatGUI(npc, player, null, null, false);
             } else if (isCustomItem(current, "back")) {
-                runTask(() -> new MainGUI(plugin, npc, player));
+                runTask(() -> new MainGUI(plugin, npc, player), Pair.of(player, null));
             }
             return;
         }
@@ -428,7 +430,7 @@ public final class InventoryListeners implements Listener {
             return;
         } else if (isCustomItem(current, "inspect-inventory")) {
             main.setShouldStopInteracting(false);
-            runTask(() -> new EquipmentGUI(plugin, npc, player));
+            runTask(() -> new EquipmentGUI(plugin, npc, player), Pair.of(player, null));
             return;
         } else if (isCustomItem(current, "gift")) {
             handleExpecting(player, npc, ExpectingType.GIFT, Messages.Message.THROW_GIFT, Messages.Message.GIFT_EXPECTING);
@@ -459,7 +461,7 @@ public final class InventoryListeners implements Listener {
             }
 
             npc.setProcreatingWith(playerUUID);
-            new BabyTask(plugin, villager, player).runTaskTimer(plugin, 0L, 20L);
+            new BabyTask(plugin, villager, player).runTaskTimer(plugin, player, 0L, 20L);
         } else if (isCustomItem(current, "divorce")) {
             // Return if it's a kid.
             if (conditionNotMet(player, villager.isAdult(), Messages.Message.INTERACT_FAIL_NOT_AN_ADULT)) return;
@@ -496,7 +498,7 @@ public final class InventoryListeners implements Listener {
                     true,
                     "realisticvillagers.bypass.combat")) return;
             main.setShouldStopInteracting(false);
-            runTask(() -> new CombatSettingsGUI(plugin, npc, player));
+            runTask(() -> new CombatSettingsGUI(plugin, npc, player), Pair.of(player, null));
             return;
         } else if (isCustomItem(current, "set-home")) {
             if (notAllowedToModify(player,
@@ -533,7 +535,7 @@ public final class InventoryListeners implements Listener {
                     npc.shakeHead(player);
                 } else {
                     // Start trading from villager instance so discounts are applied to the player.
-                    plugin.getServer().getScheduler().runTask(plugin, () -> npc.startTrading(player));
+                    Folia.getScheduler().runTask(plugin, player, () -> npc.startTrading(player));
                     return;
                 }
             }
@@ -631,7 +633,7 @@ public final class InventoryListeners implements Listener {
     private void openPlayersGUI(IVillagerNPC npc, Player player, @Nullable Integer page, @Nullable String keyword) {
         runTask(() -> new PlayersGUI(plugin, npc, player, npc.getPlayers().stream()
                 .map(Bukkit::getOfflinePlayer)
-                .collect(Collectors.toSet()), page, keyword));
+                .collect(Collectors.toSet()), page, keyword), Pair.of(player, null));
     }
 
     private boolean notAllowedToModify(@NotNull Player player, boolean isPartner, boolean isFamily, @NotNull Config whoCanModify, boolean sendMessage, String permission) {
@@ -677,7 +679,7 @@ public final class InventoryListeners implements Listener {
 
         runTask(() -> {
             if (plugin.getCompatibilityManager().handleVTL(vtl, player, villager)) closeInventory(player);
-        });
+        }, Pair.of(player, null));
         return true;
     }
 
@@ -805,7 +807,7 @@ public final class InventoryListeners implements Listener {
                         String text = snapshot.getText();
                         if (text.isBlank()) return RealisticVillagers.CLOSE_RESPONSE;
 
-                        runTask(() -> SkinGUI.openMenu(plugin, snapshot.getPlayer(), currentSex, isAdult, null, text));
+                        runTask(() -> SkinGUI.openMenu(plugin, snapshot.getPlayer(), currentSex, isAdult, null, text), Pair.of(player, null));
                         success.set(true);
 
                         return RealisticVillagers.CLOSE_RESPONSE;
@@ -816,7 +818,7 @@ public final class InventoryListeners implements Listener {
                     .plugin(plugin)
                     .onClose(snapshot -> {
                         if (success.get()) return;
-                        runTask(() -> SkinGUI.openMenu(plugin, snapshot.getPlayer(), currentSex, isAdult, skin.getCurrentPage(), null));
+                        runTask(() -> SkinGUI.openMenu(plugin, snapshot.getPlayer(), currentSex, isAdult, skin.getCurrentPage(), null), Pair.of(player, null));
                     })
                     .open((Player) event.getWhoClicked());
             return;
@@ -835,7 +837,7 @@ public final class InventoryListeners implements Listener {
                 closeInventory(player);
                 return;
             }
-            plugin.getServer().getScheduler().runTask(plugin, () -> new NewSkinGUI(plugin, player, skin));
+            Folia.getScheduler().runTask(plugin, player, () -> new NewSkinGUI(plugin, player, skin));
             return;
         }
 
@@ -973,7 +975,7 @@ public final class InventoryListeners implements Listener {
                 future.thenAcceptAsync(skinObject -> {
                     // For some unknown reason, needs to be done sync.
                     Texture texture = skinObject.data.texture;
-                    runTask(() -> startPreview(player, new TextureProperty("textures", texture.value, texture.signature)));
+                    runTask(() -> startPreview(player, new TextureProperty("textures", texture.value, texture.signature)), Pair.of(player, null));
                 }, tracker.getMineskinClient().getRequestExecutor());
             } else {
                 VillagerTracker.SkinRelatedData tempData = new VillagerTracker.SkinRelatedData(sex, profession, id, null, null, null);
@@ -1042,7 +1044,7 @@ public final class InventoryListeners implements Listener {
                     source.isMale() ? "male" : "female",
                     source.isAdult(),
                     source.getCurrentPage(),
-                    source.getKeyword()));
+                    source.getKeyword()), Pair.of(player, null));
         }
 
         if (isCustomItem(current, "from-console")) {
@@ -1080,7 +1082,7 @@ public final class InventoryListeners implements Listener {
                     }
 
                     // Player is offline, we need to get the texture from minecraft servers...
-                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                    Folia.getScheduler().runTaskAsynchronously(plugin, () -> {
                         try {
                             URL profiles = new URL("https://api.mojang.com/users/profiles/minecraft/" + result);
                             InputStreamReader profilesReader = new InputStreamReader(profiles.openStream());
@@ -1118,29 +1120,39 @@ public final class InventoryListeners implements Listener {
                 .plugin(plugin)
                 .onClose(snapshot -> {
                     if (success.get()) return;
-                    runTask(() -> new NewSkinGUI(plugin, snapshot.getPlayer(), skin.getPreviousSource()));
+                    runTask(() -> new NewSkinGUI(plugin, snapshot.getPlayer(), skin.getPreviousSource()), Pair.of(player, null));
                 })
                 .open((Player) event.getWhoClicked());
     }
 
     private void openCombatGUI(IVillagerNPC npc, Player player, @Nullable Integer page, @Nullable String keyword, boolean isAnimal) {
-        runTask(() -> new CombatGUI(plugin, npc, player, page, keyword, isAnimal));
+        runTask(() -> new CombatGUI(plugin, npc, player, page, keyword, isAnimal), Pair.of(player, null));
     }
 
     private void openWhistleGUI(Player player, @Nullable Integer page, @Nullable String keyword) {
-        runTask(() -> plugin.openWhistleGUI(player, page, keyword));
+        runTask(() -> plugin.openWhistleGUI(player, page, keyword), Pair.of(player, null));
     }
 
     private void openSkinGUI(Player player, String sex, boolean isAdult) {
-        runTask(() -> SkinGUI.openMenu(plugin, player, sex, isAdult, null, null));
+        runTask(() -> SkinGUI.openMenu(plugin, player, sex, isAdult, null, null), Pair.of(player, null));
     }
 
     private void closeInventory(@NotNull Player player) {
-        runTask(player::closeInventory);
+        runTask(player::closeInventory, Pair.of(player, null));
     }
 
-    private void runTask(Runnable runnable) {
-        plugin.getServer().getScheduler().runTask(plugin, runnable);
+    private void runTask(Runnable runnable, Pair<Entity, Location> pair) {
+        if (pair != null) {
+            if (pair.getKey() != null) {
+                Folia.getScheduler().runTask(plugin, pair.getKey(), runnable);
+                return;
+            }
+            if (pair.getValue() != null) {
+                Folia.getScheduler().runTask(plugin, pair.getValue(), runnable);
+                return;
+            }
+        }
+        Folia.getScheduler().runTaskAsynchronously(plugin, runnable);
     }
 
     public boolean canModifyInventory(IVillagerNPC npc, Player player) {

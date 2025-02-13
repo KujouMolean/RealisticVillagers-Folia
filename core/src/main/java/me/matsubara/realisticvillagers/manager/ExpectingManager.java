@@ -1,5 +1,6 @@
 package me.matsubara.realisticvillagers.manager;
 
+import com.molean.folia.adapter.Folia;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.data.HandleHomeResult;
 import me.matsubara.realisticvillagers.entity.IVillagerNPC;
@@ -352,8 +353,8 @@ public final class ExpectingManager implements Listener {
 
     private void dropRing(@NotNull IVillagerNPC npc, ItemStack gift) {
         npc.drop(gift);
-        plugin.getServer().getScheduler().runTaskLater(
-                plugin,
+        Folia.getScheduler().runTaskLater(
+                plugin, npc.bukkit().getLocation(),
                 () -> {
                     if (npc.bukkit() instanceof InventoryHolder holder) {
                         holder.getInventory().removeItem(plugin.getRing().getResult());

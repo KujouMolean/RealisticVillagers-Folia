@@ -10,6 +10,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.protocol.player.TextureProperty;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
+import com.molean.folia.adapter.Folia;
 import me.matsubara.realisticvillagers.RealisticVillagers;
 import me.matsubara.realisticvillagers.data.ExpectingType;
 import me.matsubara.realisticvillagers.data.InteractType;
@@ -126,7 +127,7 @@ public final class VillagerListeners extends SimplePacketListenerAbstract implem
 
         // Update villager skin when changing a job after 1 tick since this event is called before changing a job.
         // Respawn NPC with the new profession texture.
-        plugin.getServer().getScheduler().runTask(plugin, () -> tracker.refreshNPCSkin(villager, true));
+        Folia.getScheduler().runTask(plugin, villager.getLocation(), () -> tracker.refreshNPCSkin(villager, true));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -230,7 +231,7 @@ public final class VillagerListeners extends SimplePacketListenerAbstract implem
         if (hand != EquipmentSlot.HAND) return true;
         if (action != null && action != WrapperPlayClientInteractEntity.InteractAction.INTERACT) return true;
 
-        plugin.getServer().getScheduler().runTask(plugin, (() -> {
+        Folia.getScheduler().runTask(plugin, player, (() -> {
             Messages messages = plugin.getMessages();
 
             // Don't open GUI if using the whistle.

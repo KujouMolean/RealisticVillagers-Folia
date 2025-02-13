@@ -1,5 +1,6 @@
 package me.matsubara.realisticvillagers.gui.types;
 
+import com.molean.folia.adapter.Folia;
 import lombok.Getter;
 import lombok.Setter;
 import me.matsubara.realisticvillagers.RealisticVillagers;
@@ -110,7 +111,7 @@ public class SkinGUI extends PaginatedGUI {
                 if (skinItem != null) heads.add(skinItem);
             }
             return heads;
-        }).thenAccept(heads -> plugin.getServer().getScheduler().runTask(plugin, () -> new SkinGUI(plugin, player, heads, isMale, isAdult, page, keyword)));
+        }).thenAccept(heads -> Folia.getScheduler().runTask(plugin, player, () -> new SkinGUI(plugin, player, heads, isMale, isAdult, page, keyword)));
     }
 
     @Override
